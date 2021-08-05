@@ -15,6 +15,7 @@
     props: {
       titles: {
         type: Array,
+        //返回值是对象或者数组返回的是函数
         default() {
           return []
         }
