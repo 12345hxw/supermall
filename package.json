@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.18.1",
+    "better-scroll": "^1.13.2",
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-router": "^3.0.1"
@@ -40,14 +41,12 @@
     "last 2 versions",
     "not dead"
   ],
-
-"rules": {
-  "generator-star-spacing": "off",
-  "no-tabs":"off",
-  "no-unused-vars":"off",
-  "no-console":"off",
-  "no-irregular-whitespace":"off",
-  "no-debugger": "off"
-}
-
+  "rules": {
+    "generator-star-spacing": "off",
+    "no-tabs": "off",
+    "no-unused-vars": "off",
+    "no-console": "off",
+    "no-irregular-whitespace": "off",
+    "no-debugger": "off"
+  }
 }
