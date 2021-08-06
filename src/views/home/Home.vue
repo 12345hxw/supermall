@@ -1,15 +1,18 @@
 <template>
   <div id="home" class="wrapper">
-    <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
+    <nav-bar class="home-nav">
+      <div slot="center">购物街</div>
+    </nav-bar>
       <Scroll class="content" ref="scroll" :probe-type="3"
-       @scroll="contentScroll" :pull-up-load="true">
+       @scroll="contentScroll" :pull-up-load="true"
+       @pullingUp="loadMore">
        
         <home-swiper :banners="banners"/>
         <recommend-view :recommends="recommends"/>
         <feature-view/>
-        <tab-control class="tab-control"
-                    :titles="['流行', '新款', '精选']"
-                    @tabClick="tabClick"/>
+        <tab-control :titles="['流行', '新款', '精选']"
+                    @tabClick="tabClick"
+                    ref="tabControl"/>
         <good-list :goods="showGoods"/>
       </Scroll>
       <!-- 监听组件的原生事件 -->
@@ -33,7 +36,7 @@
   import BackTop from 'components/content/backTop/BackTop'
 
   import { getHomeMultidata, getHomeGoods } from "network/home"
-
+  import {debounce} from 'common/utils'
  
   export default {
     name: "Home",
@@ -57,7 +60,8 @@
           'sell': {page: 0, list: []},
         },
         currentType: 'pop',
-        isShowBackTop: false
+        isShowBackTop: false,
+        tabOffsetTop:0
       }
     },
     computed: {
@@ -74,13 +78,28 @@
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
 
-      //3.监听item中图片加载完成
+      
+    },
+    //created监听不到
+    mounted(){
+      //1.图片加载完成的事件监听
+     
+      const refresh=debounce(this.$refs.scroll.refresh,500)
+
+       //3.监听item中图片加载完成
       this.$bus.$on("itemImageLoad", () =>{
         // console.log("---")
-        this.$refs.scroll.refresh()
+        refresh()
+        // this.scroll && this.$refs.scroll.refresh()
       })
+      //2.获取tabConrol的offsetTop
+      //所有的组件都有一个属性$el:用于获取组件的元素的
+      console.log(this.$refs.tabControl.$el.offsetTop)
+      //  this.tabOffsetTop=this.$refs.TabControl
     },
     methods: {
+      //防抖函数
+    
       /**
        * 事件监听相关的方法
        */
@@ -113,7 +132,8 @@
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
 
-       
+          //完成上拉加载更多
+          this.$refs.scroll.finishPullUp()
         })
       },
       backClick(){
@@ -123,6 +143,10 @@
         // console.log(position)
         this.isShowBackTop=(-position.y) > 1000
 
+      },
+      loadMore(){
+        // console.log("加载")
+        this.getHomeGoods(this.currentType)
       }
   
     }
@@ -144,12 +168,6 @@
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
-  }
-
-  .tab-control {
-    position: sticky;
-    top: 44px;
     z-index: 9;
   }
 
