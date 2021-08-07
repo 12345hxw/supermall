@@ -39,7 +39,8 @@
   import BackTop from 'components/content/backTop/BackTop'
 
   import { getHomeMultidata, getHomeGoods } from "network/home"
-  import {debounce} from 'common/utils'
+  // import {debounce} from 'common/utils'
+  import {itemListenerMixin} from 'common/mixin'
  
   export default {
     name: "Home",
@@ -74,6 +75,7 @@
         return this.goods[this.currentType].list
       }
     },
+    mixins:[itemListenerMixin],
     created() {
       // 1.请求多个数据
       this.getHomeMultidata()
@@ -91,21 +93,14 @@
       
     },
     deactivated(){
+      //1.保存Y值
       this.saveY=this.$refs.scroll.getScrollY()
+      //2.取消全局事件的监听
+      this.$bus.$off("itemImgLoad",this.itemImgListener)
     },
     //created监听不到
     mounted(){
-      //1.图片加载完成的事件监听
-     
-      const refresh=debounce(this.$refs.scroll.refresh,500)
-
-       //3.监听item中图片加载完成
-      this.$bus.$on("itemImageLoad", () =>{
-        // console.log("---")
-        refresh()
-        // this.scroll && this.$refs.scroll.refresh()
-      })
-      
+   
     },
     methods: {
       //防抖函数
