@@ -1,6 +1,6 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"/>
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav" />
     <scroll
       class="content"
       ref="scroll"
@@ -15,7 +15,8 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo" />
       <goods-list ref="recommend" :goods="recommend" />
     </scroll>
-    <detail-bottom-bar/>
+    <detail-bottom-bar @addCart="addToCart"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -27,9 +28,10 @@ import DetailShopInfo from "./childComps/DetailShopInfo";
 import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
 import DetailParamInfo from "./childComps/DetailParamInfo";
 import DetailCommentInfo from "./childComps/DetailCommentInfo";
-import DetailBottomBar from './childComps/DetailBottomBar'
+import DetailBottomBar from "./childComps/DetailBottomBar";
 import Scroll from "components/common/scroll/Scroll";
 import GoodsList from "components/content/goods/GoodsList";
+
 
 import {
   getDetail,
@@ -39,8 +41,7 @@ import {
   getRecommend,
 } from "network/detail";
 import { debounce } from "common/utils";
-import { itemListenerMixin } from "common/mixin";
-
+import { itemListenerMixin ,backTopMixin} from "common/mixin";
 
 export default {
   name: "Detail",
@@ -55,7 +56,6 @@ export default {
     DetailBottomBar,
     Scroll,
     GoodsList
-  
   },
   data() {
     return {
@@ -70,9 +70,9 @@ export default {
       themeTopYs: [],
       getThemeTopY: null,
       currentIndex: 0
-    };
+    }
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin,backTopMixin],
   created() {
     // 1.保存传入的iid
     this.iid = this.$route.params.iid;
@@ -168,13 +168,35 @@ export default {
       // positonY 在17218和非常大的值之间，index=3
 
       let length = this.themeTopYs.length;
-       for (let i = 0; i <length -1; i++) {
-        if (this.currentIndex !== i && ((positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i + 1]))) {
-          this.currentIndex = i
-          console.log(this.currentIndex)
-          this.$refs.nav.currentIndex = this.currentIndex
+      for (let i = 0; i < length - 1; i++) {
+        if (
+          this.currentIndex !== i &&
+          positionY >= this.themeTopYs[i] &&
+          positionY < this.themeTopYs[i + 1]
+        ) {
+          this.currentIndex = i;
+          console.log(this.currentIndex);
+          this.$refs.nav.currentIndex = this.currentIndex;
         }
       }
+
+      //3.是否显示回到顶部
+      this.isShowBackTop = -position.y > 1000;
+     
+    },
+    addToCart(){
+      //1.获取购物车需要展示的信息
+      const product ={}
+      product.image=this.topImages[0]
+      product.title=this.goods.title
+      product.desc=this.goods.desc
+      product.price=this.goods.realPrice
+      product.iid=this.iid
+
+
+      //2.将商品添加到购物车
+      // this.$store.commit("addCart",product)
+      this.$store.dispatch('addCart',product)
     }
   },
   mounted() {},
