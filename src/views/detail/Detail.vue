@@ -17,6 +17,7 @@
     </scroll>
     <detail-bottom-bar @addCart="addToCart"/>
     <back-top @click.native="backClick" v-show="isShowBackTop" />
+    <toast :message="message" :isShow="isShow"/>
   </div>
 </template>
 
@@ -31,17 +32,18 @@ import DetailCommentInfo from "./childComps/DetailCommentInfo";
 import DetailBottomBar from "./childComps/DetailBottomBar";
 import Scroll from "components/common/scroll/Scroll";
 import GoodsList from "components/content/goods/GoodsList";
-
+import Toast from 'components/common/toast/Toast'
 
 import {
   getDetail,
   Goods,
   Shop,
   GoodsParam,
-  getRecommend,
+  getRecommend
 } from "network/detail";
 import { debounce } from "common/utils";
 import { itemListenerMixin ,backTopMixin} from "common/mixin";
+import {mapActions} from 'vuex'
 
 export default {
   name: "Detail",
@@ -55,7 +57,8 @@ export default {
     DetailCommentInfo,
     DetailBottomBar,
     Scroll,
-    GoodsList
+    GoodsList,
+    Toast
   },
   data() {
     return {
@@ -69,7 +72,9 @@ export default {
       recommend: {},
       themeTopYs: [],
       getThemeTopY: null,
-      currentIndex: 0
+      currentIndex: 0,
+      message:"",
+      isShow:false
     }
   },
   mixins: [itemListenerMixin,backTopMixin],
@@ -146,6 +151,7 @@ export default {
     }, 100);
   },
   methods: {
+    ...mapActions(['addCart']),
     imageLoad() {
       this.$refs.scroll.refresh();
       this.getThemeTopY();
@@ -175,7 +181,7 @@ export default {
           positionY < this.themeTopYs[i + 1]
         ) {
           this.currentIndex = i;
-          console.log(this.currentIndex);
+          // console.log(this.currentIndex);
           this.$refs.nav.currentIndex = this.currentIndex;
         }
       }
@@ -196,7 +202,15 @@ export default {
 
       //2.将商品添加到购物车
       // this.$store.commit("addCart",product)
-      this.$store.dispatch('addCart',product)
+      this.addCart(product).then(res =>{
+        console.log(res)
+        this.isShow = true
+        this.message=res
+        setTimeout(() =>{
+          this.isShow=false
+          this.message=""
+        },1500)
+      })
     }
   },
   mounted() {},
